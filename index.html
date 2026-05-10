@@ -327,15 +327,7 @@ textarea.fi{resize:vertical;min-height:58px;line-height:1.5}
   let cm=now.getMonth(), cy=now.getFullYear();
   let editBillId=null, calcMode='hourly', activeTab='bills', pendingDeleteId=null;
 
-  let bills=load('lg_bills',[
-    {id:1,name:'Rent',amount:850,dueDay:5,recurring:true,notes:''},
-    {id:2,name:'Electric',amount:50,dueDay:25,recurring:true,notes:''},
-    {id:3,name:'Internet',amount:55,dueDay:14,recurring:true,notes:''},
-    {id:4,name:'Insurance',amount:279,dueDay:5,recurring:true,notes:''},
-    {id:5,name:'Water',amount:111,dueDay:2,recurring:true,notes:''},
-    {id:6,name:'Mari phone',amount:129,dueDay:8,recurring:true,notes:''},
-    {id:7,name:'Corey phone',amount:29,dueDay:11,recurring:true,notes:''},
-  ]);
+  let bills=load('lg_bills',[]);
   let paid=load('lg_paid',{});
   let incomes=load('lg_income',[]);
 
@@ -417,7 +409,15 @@ textarea.fi{resize:vertical;min-height:58px;line-height:1.5}
     }
 
     if(!mb.length){
-      list.innerHTML='<div class="empty">No bills this month.<br>Tap <strong>Add bill</strong> to get started.</div>';
+      var isFirstEver=bills.length===0;
+      list.innerHTML=isFirstEver
+        ?'<div class="empty" style="padding:40px 20px">'
+          +'<i class="ti ti-wallet" style="font-size:36px;color:var(--ac);display:block;margin-bottom:14px"></i>'
+          +'<div style="font-size:15px;font-weight:500;color:var(--tx);margin-bottom:8px">Welcome to Ledger</div>'
+          +'<div style="color:var(--mt);line-height:1.7;margin-bottom:20px">Track your bills, income, and see exactly<br>how many hours of work each bill costs you.</div>'
+          +'<button class="badd" style="margin:0 auto;padding:8px 20px;font-size:13px" onclick="openBillModal()"><i class="ti ti-plus" style="font-size:13px"></i> Add your first bill</button>'
+          +'</div>'
+        :'<div class="empty">No bills this month.<br>Tap <strong>Add bill</strong> to add one.</div>';
       return;
     }
 
