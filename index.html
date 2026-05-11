@@ -546,41 +546,48 @@ async function handleSignOut(){
 
 // ── Auth state listener ──────────────────────────────────────
 async function handleSession(session){
+  console.log('[Ledger] handleSession called, user:', session?.user?.id || 'none');
   if(session&&session.user){
     currentUser=session.user;
     showScreen('loading');
     try{
+      console.log('[Ledger] Loading data...');
       await loadAll();
+      console.log('[Ledger] Data loaded, bills:', bills.length);
       $('mlbl').textContent=MONTHS[cm]+' '+cy;
       if(bills.length===0&&incomes.length===0){
+        console.log('[Ledger] No data, showing onboarding');
         showOnboarding();
       } else {
+        console.log('[Ledger] Showing main app');
         showScreen('main');
         try{
           renderBills();
+          console.log('[Ledger] Bills rendered successfully');
         }catch(renderErr){
-          console.error('Render error:',renderErr);
+          console.error('[Ledger] Render error:',renderErr);
           const list=$('blist');
           if(list)list.innerHTML='<div class="empty" style="padding:40px;color:var(--rd)">Error rendering bills. Check console.</div>';
         }
       }
     }catch(e){
-      console.error('Load/render error:',e);
+      console.error('[Ledger] Load/render error:',e);
       showScreen('main');
       const list=$('blist');
       if(list)list.innerHTML='<div class="empty" style="padding:40px;color:var(--rd)">Error loading data: '+e.message+'</div>';
     }
   } else {
+    console.log('[Ledger] No session, showing auth screen');
     currentUser=null;
     showScreen('auth');
   }
 }
 
-// Check for existing session on page load
-sb.auth.getSession().then(({data:{session}})=>handleSession(session));
-
-// Listen for auth changes
-sb.auth.onAuthStateChange((_,session)=>handleSession(session));
+// Listen for auth changes (fires immediately with current session)
+sb.auth.onAuthStateChange((_,session)=>{
+  console.log('[Ledger] Auth state change event');
+  handleSession(session);
+});
 
 // ── Data loading ─────────────────────────────────────────────
 async function loadAll(){
@@ -1176,16 +1183,7 @@ window.handleAuth=handleAuth;window.showAuthTab=showAuthTab;window.handleSignOut
 window.askClear=askClear;window.showUpgradeModal=showUpgradeModal;window.closeUpgradeModal=closeUpgradeModal;
 window.obNext=obNext;window.obSkip=obSkip;
 
-console.log('[Ledger] Script loaded, checking session...');
-sb.auth.getSession().then(({data:{session}})=>{
-  console.log('[Ledger] Initial session check:', session?'logged in':'no session');
-  handleSession(session);
-}).catch(err=>{
-  console.error('[Ledger] Session check failed:', err);
-  showScreen('auth');
-});
-
-console.log('[Ledger] Auth listener attached');
+console.log('[Ledger] Script loaded and auth listener attached');
 
 })();
 </script>
