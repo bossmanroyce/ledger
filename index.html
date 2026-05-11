@@ -549,13 +549,26 @@ sb.auth.onAuthStateChange(async(_,session)=>{
   if(session&&session.user){
     currentUser=session.user;
     showScreen('loading');
-    try{await loadAll();}catch(e){console.error('Load error:',e);}
+    try{
+      await loadAll();
+    }catch(e){
+      console.error('Load error:',e);
+      // Degrade gracefully - show app even if load failed
+      bills=[];incomes=[];debts=[];paidSet=new Set();
+    }
     $('mlbl').textContent=MONTHS[cm]+' '+cy;
-    if(bills.length===0&&incomes.length===0){
-      showOnboarding();
-    } else {
+    try{
+      if(bills.length===0&&incomes.length===0){
+        showOnboarding();
+      } else {
+        showScreen('main');
+        renderBills();
+      }
+    }catch(renderErr){
+      console.error('Render error:',renderErr);
+      // Force show main screen even if render fails
       showScreen('main');
-      renderBills();
+      document.getElementById('blist').innerHTML='<div class="empty" style="padding:40px;color:var(--rd)">Something went wrong loading your data. Check the browser console for details, or try refreshing the page.</div>';
     }
   } else {
     currentUser=null;
