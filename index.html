@@ -551,24 +551,26 @@ sb.auth.onAuthStateChange(async(_,session)=>{
     showScreen('loading');
     try{
       await loadAll();
-    }catch(e){
-      console.error('Load error:',e);
-      // Degrade gracefully - show app even if load failed
-      bills=[];incomes=[];debts=[];paidSet=new Set();
-    }
-    $('mlbl').textContent=MONTHS[cm]+' '+cy;
-    try{
+      $('mlbl').textContent=MONTHS[cm]+' '+cy;
       if(bills.length===0&&incomes.length===0){
         showOnboarding();
       } else {
         showScreen('main');
-        renderBills();
+        try{
+          renderBills();
+        }catch(renderErr){
+          console.error('Render error:',renderErr);
+          // Show error in UI but keep app visible
+          const list=$('blist');
+          if(list)list.innerHTML='<div class="empty" style="padding:40px;color:var(--rd)">Error rendering bills. Check console.</div>';
+        }
       }
-    }catch(renderErr){
-      console.error('Render error:',renderErr);
-      // Force show main screen even if render fails
+    }catch(e){
+      console.error('Load/render error:',e);
+      // Show main app even if everything failed
       showScreen('main');
-      document.getElementById('blist').innerHTML='<div class="empty" style="padding:40px;color:var(--rd)">Something went wrong loading your data. Check the browser console for details, or try refreshing the page.</div>';
+      const list=$('blist');
+      if(list)list.innerHTML='<div class="empty" style="padding:40px;color:var(--rd)">Error loading data: '+e.message+'</div>';
     }
   } else {
     currentUser=null;
