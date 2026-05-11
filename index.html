@@ -1176,6 +1176,17 @@ window.handleAuth=handleAuth;window.showAuthTab=showAuthTab;window.handleSignOut
 window.askClear=askClear;window.showUpgradeModal=showUpgradeModal;window.closeUpgradeModal=closeUpgradeModal;
 window.obNext=obNext;window.obSkip=obSkip;
 
+console.log('[Ledger] Script loaded, checking session...');
+sb.auth.getSession().then(({data:{session}})=>{
+  console.log('[Ledger] Initial session check:', session?'logged in':'no session');
+  handleSession(session);
+}).catch(err=>{
+  console.error('[Ledger] Session check failed:', err);
+  showScreen('auth');
+});
+
+console.log('[Ledger] Auth listener attached');
+
 })();
 </script>
 </body>
